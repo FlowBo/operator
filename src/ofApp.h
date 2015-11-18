@@ -1,7 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
-#include "commander.hpp"
+#include "ofxAruco.h"
+#include "commander.h"
+#include "videoController.h"
+
 
 class ofApp : public ofBaseApp{
     
@@ -20,4 +23,19 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     commander op900;
+    
+    videoController vController;
+    
+    int useExternalCamera = 2;
+    
+    ofxAruco aruco;
+    
+    string PanelID;
+    string newPosition;
+    
+    ofImage image;
+    std::string changeThisString;
+    
+    std::vector<ofColor>imageColorsSorted;
+    
 };
