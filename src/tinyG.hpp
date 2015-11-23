@@ -26,8 +26,10 @@ private:
 
     int counter = 0;
     bool busy = false;
-
     
+    int statusInterval = 250; // Millis
+    void statusUpdate();
+
     //TinyG status
     float xPos;
     float yPos;

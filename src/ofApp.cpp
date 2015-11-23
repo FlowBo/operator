@@ -11,12 +11,12 @@ void ofApp::setup(){
     }
     op900.setup(&vController);
     image.loadImage("red_square.png");
-    for(int x = image.width-1; x >= 0;x--){
-        for (int y = image.height-1; y >= 0; y--) {
+    for(int x = image.width; x >= 0;x--){
+        for (int y = image.height; y >= 0; y--) {
             imageColorsSorted.push_back(image.getColor(x, y));
-            cout << "(" << image.getColor(x, y) << ")";
         }
     }
+    cout << imageColorsSorted.size() << endl;
     changeThisString = "yeah";
     ofShowCursor();
     ofSetFrameRate(60);
@@ -51,13 +51,12 @@ void ofApp::keyPressed(int key){
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
     if(key == 'n'){
-        string pId;
+        string pId, newPosX, newPosY;
         pId = ofSystemTextBoxDialog("Panel ID", pId);
-        int pIdConvert =  ofToInt(pId);
-        string newPos;
-        newPos = ofSystemTextBoxDialog("New Position", newPos);
-        cout << "ID: " << pIdConvert << " Pos: " << newPos << endl;
-        op900.updatePosition(pIdConvert, newPos);
+        newPosX = ofSystemTextBoxDialog("X Position", newPosX);
+        newPosY = ofSystemTextBoxDialog("Y Position", newPosY);
+        cout << "ID: " << pId << " Pos: " << newPosX << ", " << newPosY << endl;
+        op900.updatePosition(pId, newPosX, newPosY);
     }
     if(key == 'g'){
         string gCode;
@@ -65,9 +64,18 @@ void ofApp::keyReleased(int key){
         op900.sendGCode(gCode);
     }
     if(key == ' '){
-        op900.sendGCode("G80");
+        op900.useTinyG = true;
     }
 
+    if (key == 'o') {
+        string offsetX;
+        string offsetY;
+        
+        offsetX = ofSystemTextBoxDialog("Enter X-Offset (Position)", offsetX);
+        offsetY = ofSystemTextBoxDialog("Enter Y-Offset (Position)", offsetY);
+        op900.updateOffset(offsetX,offsetY);
+        
+    }
 }
 
 //--------------------------------------------------------------

@@ -50,6 +50,44 @@ void tinyG::setup(){
     sendGcode("g28.2x0y0z0");
 };
 
+
+void tinyG::statusUpdate(){
+    
+    if (ofGetElapsedTimeMillis()% statusInterval == 0 ) {
+        ofx::IO::ByteBuffer textBuffer("{sr:n}");
+        device.writeBytes(textBuffer);
+        device.writeByte('\n');
+    }
+    try
+    {
+        std::ostringstream convert;
+        uint8_t buffer[10000];
+        while (device.available() > 99 )
+        {
+            std::size_t sz = device.readBytes(buffer, 10000);
+            for (int i = 0; i < sz; ++i)
+            {
+                convert << buffer[i];
+            }
+            string parser = convert.str(); //convert Byts to String
+            result = parser;//Convert To JSON
+            //Get Values
+            xPos = result["r"]["sr"]["posX"].asFloat();
+            yPos = result["r"]["sr"]["posY"].asFloat();
+            zPos = result["r"]["sr"]["posZ"].asFloat();
+            aPos = result["r"]["sr"]["posA"].asFloat();
+            stat = result["r"]["sr"]["stat"].asInt();
+        }
+    }
+    catch (const std::exception& exc)
+    {
+        ofLogError("ofApp::update") << exc.what();
+    }
+}
+
+
+
+
 void tinyG::update(){
     try
     {
@@ -62,31 +100,46 @@ void tinyG::update(){
         while (device.available() > 99)
         {
             std::size_t sz = device.readBytes(buffer, 10000);
+            
             for (int i = 0; i < sz; ++i)
             {
                 convert << buffer[i];
             }
+            
             bytesAsString = convert.str();
-            cout << bytesAsString << endl;
             result = bytesAsString;
+            cout << bytesAsString << endl;
             stat = result["sr"]["stat"].asInt();
             xPos = result["sr"]["posx"].asFloat();
             yPos = result["sr"]["posy"].asFloat();
             zPos = result["sr"]["posz"].asFloat();
             aPos = result["sr"]["posa"].asFloat();
-
-        }
-
-
-        if(stat != lastStat){
-            cout << "stat: " << stat << endl;
-            lastStat = stat;
-            if (stat == 3) {
-                busy = false;
-            }else {
-                busy = true;
-            }
+            cout << stat << endl;
+//            cout << bytesAsString.at(bytesAsString.find("stat")+6) << endl;
             
+            
+//            cout << result["sr"]["stat"].asInt();
+//            cout <<  bytesAsString.find("stat") << endl;
+        }
+        
+        
+        
+        
+//        if(stat != lastStat){
+//            cout << "stat: " << stat << endl;
+//            lastStat = stat;
+//            if (stat == 3) {
+//                busy = false;
+//            }else {
+//                busy = true;
+//            }
+//            
+//        }
+        
+        if (stat == 3) {
+            busy = false;
+        }else {
+            busy = true;
         }
         
         if(text != ""){

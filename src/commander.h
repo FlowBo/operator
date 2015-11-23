@@ -6,7 +6,7 @@
 #include <fstream>
 
 
-enum currentCycle{
+enum cycle{
     HOME,
     SCREW_HOME,
     ENGAGING_SCREW,
@@ -26,8 +26,13 @@ public:
     void update();
     void draw();
     
-    ifstream fin;
-    ofstream fout;
+    ifstream finX;
+    ofstream foutX;
+    ifstream finY;
+    ofstream foutY;
+    
+    float screwGap = 25;
+    
     videoController *vController;
     tinyG tinyg;
 
@@ -37,10 +42,21 @@ public:
     
     //Modul Positions
     std::vector <string> modulPositions;
-    void updatePosition(int ID, string pos);
+    std::vector <float> modulPositionsX;
+    std::vector <float> modulPositionsY;
     
+    std::vector <float> mirrorPositionX;
+    std::vector <float> mirrorPositionY;
+    
+    void calcMirrorPosPerModul();
+
+    
+    void updatePosition(string ID, string posX, string posY);
+    void updateOffset(string offsetX ,string offsetY);
+
     //Cycles
-    currentCycle cycle;
+    enum cycle cycle;
+    enum cycle lastCycle;
     void operating();
     void engageScrewCycle();
     void disengageScrewCycle();
@@ -54,12 +70,18 @@ public:
     void getNextColor();
     void getNextMirror();
     
+    void printStatus();
+    
     void getMirrorPos();
     void scanColors();
     int currentMirror;
     float cloasestColorAPos;
     
     bool dryRun = true;
+    
+    
+    
+
     
 };
 
