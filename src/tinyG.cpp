@@ -50,45 +50,59 @@ void tinyG::setup(){
     sendGcode("g28.2x0y0z0");
 };
 
+void tinyG::printStatus(){
+    cout << "xPos: " << xPos << endl;
+    cout << "yPos: " << yPos << endl;
+    cout << "zPos: " << zPos << endl;
+    cout << "aPos: " << aPos << endl;
+    cout << "stat: " << stat << endl;
+}
 
 void tinyG::statusUpdate(){
     
-    if (ofGetElapsedTimeMillis()% statusInterval == 0 ) {
-        ofx::IO::ByteBuffer textBuffer("{sr:n}");
-        device.writeBytes(textBuffer);
-        device.writeByte('\n');
+    
+//    try
+//    {
+//        std::ostringstream convert;
+//        uint8_t buffer[10000];
+//        while (device.available() > 99 )
+//        {
+//            std::size_t sz = device.readBytes(buffer, 10000);
+//            for (int i = 0; i < sz; ++i)
+//            {
+//                convert << buffer[i];
+//            }
+//            string parser = convert.str(); //convert Byts to String
+//            cout << parser << endl;
+//            result = parser;//Convert To JSON
+//            //Get Values
+//            xPos = result["r"]["sr"]["posX"].asFloat();
+//            yPos = result["r"]["sr"]["posY"].asFloat();
+//            zPos = result["r"]["sr"]["posZ"].asFloat();
+//            aPos = result["r"]["sr"]["posA"].asFloat();
+//            stat = result["r"]["sr"]["stat"].asInt();
+//        }
+//    }
+//    catch (const std::exception& exc)
+//    {
+//        ofLogError("ofApp::update") << exc.what();
+//    }
+    if (ofGetElapsedTimeMillis()% statusInterval < 10 ) {
+//        ofx::IO::ByteBuffer textBuffer("{sr:n}");
+//        device.writeBytes(textBuffer);
+//        device.writeByte('\n');
+        sendGcode("{sr:n}");
+        cout << "Status request" << endl;
     }
-    try
-    {
-        std::ostringstream convert;
-        uint8_t buffer[10000];
-        while (device.available() > 99 )
-        {
-            std::size_t sz = device.readBytes(buffer, 10000);
-            for (int i = 0; i < sz; ++i)
-            {
-                convert << buffer[i];
-            }
-            string parser = convert.str(); //convert Byts to String
-            result = parser;//Convert To JSON
-            //Get Values
-            xPos = result["r"]["sr"]["posX"].asFloat();
-            yPos = result["r"]["sr"]["posY"].asFloat();
-            zPos = result["r"]["sr"]["posZ"].asFloat();
-            aPos = result["r"]["sr"]["posA"].asFloat();
-            stat = result["r"]["sr"]["stat"].asInt();
-        }
-    }
-    catch (const std::exception& exc)
-    {
-        ofLogError("ofApp::update") << exc.what();
-    }
+    
+//
 }
 
 
 
 
 void tinyG::update(){
+    statusUpdate();
     try
     {
         uint8_t buffer[10000];
@@ -108,13 +122,13 @@ void tinyG::update(){
             
             bytesAsString = convert.str();
             result = bytesAsString;
-            cout << bytesAsString << endl;
-            stat = result["sr"]["stat"].asInt();
-            xPos = result["sr"]["posx"].asFloat();
-            yPos = result["sr"]["posy"].asFloat();
-            zPos = result["sr"]["posz"].asFloat();
-            aPos = result["sr"]["posa"].asFloat();
-            cout << stat << endl;
+            cout << "Result: " <<result << endl;
+            stat = result["r"]["sr"]["stat"].asInt();
+            xPos = result["r"]["sr"]["posx"].asFloat();
+            yPos = result["r"]["sr"]["posy"].asFloat();
+            zPos = result["r"]["sr"]["posz"].asFloat();
+            aPos = result["r"]["sr"]["posa"].asFloat();
+            cout << "Status: " << stat << endl;
 //            cout << bytesAsString.at(bytesAsString.find("stat")+6) << endl;
             
             

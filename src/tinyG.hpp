@@ -19,6 +19,9 @@ public:
     float getZPos(){return zPos;};
     float getAPos(){return aPos;};
     
+    void printStatus();
+    
+    
 private:
     ofx::IO::SerialDevice device;
     char charKey;

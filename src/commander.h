@@ -31,29 +31,37 @@ public:
     ifstream finY;
     ofstream foutY;
     
-    float screwGap = 25;
+    float screwGap = 33.56;
     
     videoController *vController;
     tinyG tinyg;
 
-    void sendGCode(string gCode);
-    
+
+    //Setup
     bool useTinyG = false;
+    void start();
     
     //Modul Positions
     std::vector <string> modulPositions;
     std::vector <float> modulPositionsX;
     std::vector <float> modulPositionsY;
-    
-    std::vector <float> mirrorPositionX;
-    std::vector <float> mirrorPositionY;
-    
-    void calcMirrorPosPerModul();
-
-    
-    void updatePosition(string ID, string posX, string posY);
+    void newModulPos(int idi);
+    void updateModulPosition(int ID, float posX, float posY);
     void updateOffset(string offsetX ,string offsetY);
 
+    //Mirror Pos
+    std::vector <float> mirrorPositionX;
+    std::vector <float> mirrorPositionY;
+    void calcMirrorPosPerModul();
+    
+    //Motion Commands
+    void sendGCode(string gCode);
+    void gotoModul(int ID);
+    
+    //Status Report
+    float getPosition(char axis);
+
+private:
     //Cycles
     enum cycle cycle;
     enum cycle lastCycle;
@@ -78,7 +86,7 @@ public:
     float cloasestColorAPos;
     
     bool dryRun = true;
-    
+    bool startMachine = false;
     
     
 

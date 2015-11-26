@@ -40,17 +40,7 @@ void commander::setup(videoController *vController){
     }
     finX.close();
     modulPositionsX.erase(modulPositionsX.end()-1);
-    
-    cout << "positionX size: " << modulPositionsX.size() << endl;
-    
-    
-    
-    
-    
-    
-    //    for(std::vector<string>::iterator iter = modulPositions.begin();iter != modulPositions.end();++iter){
-    //        cout << (*iter) << endl;
-    //    }
+    calcMirrorPosPerModul();
     if(useTinyG){
         tinyg.setup();
         cycle = HOME;
@@ -62,22 +52,26 @@ void commander::update(){
     if(useTinyG){
         operating();
         printStatus();
+
         tinyg.update();
+//        tinyg.printStatus();
     }
     
 }
-
+void commander::start(){
+    startMachine = true;
+}
 void commander::printStatus(){
     if(cycle != lastCycle)
     {
         lastCycle = cycle;
-        cout << cycle <<endl;
+        cout << "current cycle: " << cycle <<endl;
     }
     //    cout << tinyg.isBusy() <<endl;
 }
 
 void commander::operating(){
-    if(!tinyg.isBusy()){
+    if(!tinyg.isBusy() && startMachine){
         switch (cycle) {
             case HOME:
                 if(!tinyg.isBusy()){
@@ -93,7 +87,7 @@ void commander::operating(){
             case TRAVERSE:
                 if(!tinyg.isBusy()){
                     sendGCode("g1f6000");//Set feedrate to 6000
-                    string g = modulPositions.at(currentMirror);
+                    string g = "g0x"+ ofToString(mirrorPositionX.at(currentMirror))+"y" + ofToString(mirrorPositionY.at(currentMirror));
                     sendGCode(g);
                     cycle = ENGAGING_SCREW;
                 }
@@ -146,20 +140,24 @@ void commander::operating(){
 
 
 void commander::getNextMirror(){
-    currentMirror++;
-    if (currentMirror >= modulPositions.size()) {
-        currentMirror = 0;
-    }
+//    currentMirror++;
+//    if (currentMirror >= modulPositions.size()) {
+//        currentMirror = 0;
+//    }
+    
+    currentMirror = (int)ofRandom(0, 899);
+    
 }
 void commander::updateCloasestColor(){
     
 }
 void commander::goToCloasestColor(){
     string s = "g1a"+ ofToString(cloasestColorAPos) +"f10000";
-    if (dryRun) {
-        s = "g1a45.2f10000";
+    if (!dryRun) {
+//        s = "g1a45.2f10000";
+        sendGCode(s);
     }
-    sendGCode(s);
+    
 }
 void commander::engageScrewCycle(){
     if(!dryRun){
@@ -170,7 +168,7 @@ void commander::engageScrewCycle(){
     }
 }
 void commander::disengageScrewCycle(){
-    sendGCode("g1z0f3000");
+    sendGCode("g0z0");
 }
 void commander::gotoZeroA(){
     sendGCode("g0a0");
@@ -181,11 +179,10 @@ void commander::screwHomeCycle(){
     }
 }
 void commander::scanColors(){
-    //    sendGCode("g1a5400f6000");
     if(!dryRun){
         sendGCode("g1a4320f10000");
     }else{
-        sendGCode("g1a1000f10000");
+//        sendGCode("g1a1000f10000");
     }
 }
 
@@ -205,16 +202,14 @@ void commander::sendGCode(string gCode){
 }
 
 
-void commander::updatePosition(string ID, string posX, string posY ){
+void commander::updateModulPosition(int ID, float posX, float posY ){
     
-    int IdI = ofToInt(ID);
-    float posXf = ofToFloat(posX);
-    float posYf = ofToFloat(posY);
-    if(IdI >= modulPositions.size() || IdI < 0){
-        cout << "ID is to Big" << endl;
+
+    if(ID >= modulPositions.size() || ID < 0){
+        ofLog(OF_LOG_ERROR) << "ID is out of bound" << endl;
     }else{
-        modulPositionsX.at(IdI) = posXf;
-        modulPositionsY.at(IdI) = posYf;
+        modulPositionsX.at(ID) = posX;
+        modulPositionsY.at(ID) = posY;
     }
     //Save to file
     foutX.open(ofToDataPath("modulPositionsX.txt").c_str());
@@ -233,6 +228,7 @@ void commander::updatePosition(string ID, string posX, string posY ){
         }
         foutY.close();
     }
+    calcMirrorPosPerModul();
 }
 
 
@@ -302,7 +298,7 @@ void commander::updateOffset(string offsetX, string offsetY){
     foutX.open(ofToDataPath("modulPositionsX.txt").c_str());
     if (foutX.is_open())
     {
-        for(std::vector<float>::iterator iter = modulPositionsX.end();iter != modulPositionsX.begin();--iter){
+        for(std::vector<float>::iterator iter = modulPositionsX.begin();iter != modulPositionsX.end();++iter){
             foutX << (*iter) << endl;
         }
         foutX.close();
@@ -321,6 +317,40 @@ void commander::updateOffset(string offsetX, string offsetY){
 }
 
 
+float commander::getPosition(char axis){
+    
+    if(axis == 'x'){
+        return tinyg.getXPos();
+    }else if (axis == 'y'){
+        return tinyg.getYPos();
+    }
+    else if (axis == 'z'){
+        return tinyg.getZPos();
+    }
+    else if (axis == 'a'){
+        return tinyg.getAPos();
+    }
+    cout << "WRONG CHAR" << endl;
+    return;
+}
+
+
+void commander::newModulPos(int idi){
+    float x,y;
+    x = tinyg.getXPos();
+    y = tinyg.getYPos();
+    updateModulPosition(idi, x, y);
+}
+
+void commander::gotoModul(int ID){
+    if(ID >= modulPositions.size() || ID < 0){
+        ofLog(OF_LOG_ERROR) << "ID is out of bound" << endl;
+    }else{
+        sendGCode("g0z0");
+        sendGCode("g0x" + ofToString( modulPositionsX.at(ID)) + "y"+ ofToString(modulPositionsY.at(ID)));
+    }
+
+}
 
 
 

@@ -4,6 +4,7 @@
 #include "ofxAruco.h"
 #include "commander.h"
 #include "videoController.h"
+#include "ofxGui.h"
 
 
 class ofApp : public ofBaseApp{
@@ -24,6 +25,13 @@ public:
     void gotMessage(ofMessage msg);
     commander op900;
     
+    void guiSetup();
+    
+    float increment = 0.1;
+    float add = 0.1;
+    
+    float feedhold = false;
+    
     videoController vController;
     
     int useExternalCamera = 2;
@@ -34,8 +42,12 @@ public:
     string newPosition;
     
     ofImage image;
-    std::string changeThisString;
-    
     std::vector<ofColor>imageColorsSorted;
+    
+    
+    //Gui
+    ofxPanel gui;
+    ofxButton gotoModulButton;
+    void gotoModulButtonPressed();
     
 };
