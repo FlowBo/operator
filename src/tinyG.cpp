@@ -48,6 +48,8 @@ void tinyG::setup(){
     
     sendGcode("$ej 1");
     sendGcode("g28.2x0y0z0");
+    sendGcode("g55");
+    
 };
 
 void tinyG::printStatus(){
@@ -59,38 +61,7 @@ void tinyG::printStatus(){
 }
 
 void tinyG::statusUpdate(){
-    
-    
-//    try
-//    {
-//        std::ostringstream convert;
-//        uint8_t buffer[10000];
-//        while (device.available() > 99 )
-//        {
-//            std::size_t sz = device.readBytes(buffer, 10000);
-//            for (int i = 0; i < sz; ++i)
-//            {
-//                convert << buffer[i];
-//            }
-//            string parser = convert.str(); //convert Byts to String
-//            cout << parser << endl;
-//            result = parser;//Convert To JSON
-//            //Get Values
-//            xPos = result["r"]["sr"]["posX"].asFloat();
-//            yPos = result["r"]["sr"]["posY"].asFloat();
-//            zPos = result["r"]["sr"]["posZ"].asFloat();
-//            aPos = result["r"]["sr"]["posA"].asFloat();
-//            stat = result["r"]["sr"]["stat"].asInt();
-//        }
-//    }
-//    catch (const std::exception& exc)
-//    {
-//        ofLogError("ofApp::update") << exc.what();
-//    }
     if (ofGetElapsedTimeMillis()% statusInterval < 10 ) {
-//        ofx::IO::ByteBuffer textBuffer("{sr:n}");
-//        device.writeBytes(textBuffer);
-//        device.writeByte('\n');
         sendGcode("{sr:n}");
         cout << "Status request" << endl;
     }
@@ -129,27 +100,9 @@ void tinyG::update(){
             zPos = result["r"]["sr"]["posz"].asFloat();
             aPos = result["r"]["sr"]["posa"].asFloat();
             cout << "Status: " << stat << endl;
-//            cout << bytesAsString.at(bytesAsString.find("stat")+6) << endl;
-            
-            
-//            cout << result["sr"]["stat"].asInt();
-//            cout <<  bytesAsString.find("stat") << endl;
+
         }
-        
-        
-        
-        
-//        if(stat != lastStat){
-//            cout << "stat: " << stat << endl;
-//            lastStat = stat;
-//            if (stat == 3) {
-//                busy = false;
-//            }else {
-//                busy = true;
-//            }
-//            
-//        }
-        
+
         if (stat == 3) {
             busy = false;
         }else {
@@ -171,22 +124,12 @@ void tinyG::update(){
         ofLogError("ofApp::update") << exc.what();
     }
     
-//    if(!busy){
-//        string nCode = "g1x" + ofToString(ofRandom(0, 900))+"y"+ofToString(ofRandom(0, 900)) + "f6000";
-//        cout << "-----> " << counter <<" New Pos: " << nCode << endl;
-//        busy = true;
-//        sendGcode(nCode);
-//        counter++;
-//    }
 };
 
 void tinyG::draw(){
     ofSetColor(0,0,0);
     int y = 700;
-//    for (std::vector<string>::iterator iter = byteStream.begin(); iter != byteStream.end(); ++iter){
-//        ofDrawBitmapString(bytesAsString , 100,y);
-//        y -= 35;
-//    }
+
 }
 
 void tinyG::sendGcode(string t){

@@ -86,12 +86,14 @@ void ofApp::keyReleased(int key){
     }
     if (key == 'o') {
         //Set new offset for
-        string offsetX;
-        string offsetY;
-        
-        offsetX = ofSystemTextBoxDialog("Enter X-Offset (Position)", offsetX);
-        offsetY = ofSystemTextBoxDialog("Enter Y-Offset (Position)", offsetY);
-        op900.updateOffset(offsetX,offsetY);
+//        string offsetX;
+//        string offsetY;
+//        
+//        offsetX = ofSystemTextBoxDialog("Enter X-Offset (Position)", offsetX);
+//        offsetY = ofSystemTextBoxDialog("Enter Y-Offset (Position)", offsetY);
+//        op900.updateOffset(offsetX,offsetY);
+//        
+        op900.setG55();
     }
     if(key == OF_KEY_LEFT){
         float xPos = op900.getPosition('x');

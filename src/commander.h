@@ -31,6 +31,9 @@ public:
     
     float screwGap = 33.56;
     
+    float xOffset = 1;
+    float yOffset = 3;
+    
     videoController *vController;
     tinyG tinyg;
 
@@ -46,6 +49,7 @@ public:
     void newModulPos(int idi);
     void updateModulPosition(int ID, float posX, float posY);
     void updateOffset(string offsetX ,string offsetY);
+    void setG55();
 
     //Mirror Pos
     std::vector <float> mirrorPositionX;

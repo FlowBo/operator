@@ -287,40 +287,40 @@ void commander::calcMirrorPosPerModul()
     
 }
 
-void commander::updateOffset(string offsetX, string offsetY){
-    float offsetXf = ofToFloat(offsetX);
-    float offsetYf = ofToFloat(offsetY);
-    
-    float offSetXDiff = offsetXf - (modulPositionsX.at(0));
-    float offSetYDiff = offsetYf - (modulPositionsY.at(0));
-    
-    for(std::vector<float>::iterator iter = modulPositionsX.begin();iter != modulPositionsX.end();++iter){
-        (*iter) += offSetXDiff;
-    }
-    for(std::vector<float>::iterator iter = modulPositionsY.begin();iter != modulPositionsY.end();++iter){
-        (*iter) += offSetYDiff;
-    }
-    
-    fout.open(ofToDataPath("modulPositionsX.txt").c_str());
-    if (fout.is_open())
-    {
-        for(std::vector<float>::iterator iter = modulPositionsX.begin();iter != modulPositionsX.end();++iter){
-            fout << (*iter) << endl;
-        }
-        fout.close();
-    }
-    
-    fout.open(ofToDataPath("modulPositionsY.txt").c_str());
-    if (fout.is_open())
-    {
-        for(std::vector<float>::iterator iter = modulPositionsY.begin();iter != modulPositionsY.end();++iter){
-            fout << (*iter) << endl;
-        }
-        fout.close();
-    }
-    calcMirrorPosPerModul();
-    
-}
+//void commander::updateOffset(string offsetX, string offsetY){
+//    float offsetXf = ofToFloat(offsetX);
+//    float offsetYf = ofToFloat(offsetY);
+//    
+//    float offSetXDiff = offsetXf - (modulPositionsX.at(0));
+//    float offSetYDiff = offsetYf - (modulPositionsY.at(0));
+//    
+//    for(std::vector<float>::iterator iter = modulPositionsX.begin();iter != modulPositionsX.end();++iter){
+//        (*iter) += offSetXDiff;
+//    }
+//    for(std::vector<float>::iterator iter = modulPositionsY.begin();iter != modulPositionsY.end();++iter){
+//        (*iter) += offSetYDiff;
+//    }
+//    
+//    fout.open(ofToDataPath("modulPositionsX.txt").c_str());
+//    if (fout.is_open())
+//    {
+//        for(std::vector<float>::iterator iter = modulPositionsX.begin();iter != modulPositionsX.end();++iter){
+//            fout << (*iter) << endl;
+//        }
+//        fout.close();
+//    }
+//    
+//    fout.open(ofToDataPath("modulPositionsY.txt").c_str());
+//    if (fout.is_open())
+//    {
+//        for(std::vector<float>::iterator iter = modulPositionsY.begin();iter != modulPositionsY.end();++iter){
+//            fout << (*iter) << endl;
+//        }
+//        fout.close();
+//    }
+//    calcMirrorPosPerModul();
+//    
+//}
 
 float commander::getPosition(char axis){
     
@@ -371,5 +371,9 @@ void commander::setScrewGap(){
 }
 
 
-
+void commander::setG55(){
+    float x = tinyg.getXPos();
+    float y = tinyg.getYPos();
+    sendGCode("G10L2P2X" + ofToString(x) + "Y" + ofToString(y));
+}
 
