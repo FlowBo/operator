@@ -148,14 +148,13 @@ void ofApp::keyReleased(int key){
     if(key == 'r'){
         gotoModulButtonPressed();
     }
-    
-
-    
+    if(key == 'a'){
+        op900.setScrewGap();
+    }
 }
 
 
 void ofApp::guiSetup(){
-    
     gotoModulButton.addListener(this,&ofApp::gotoModulButtonPressed);
     gui.setup();
     gui.add(gotoModulButton.setup("GotoModul"));

@@ -1829,6 +1829,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_52)",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)Debug";
 				USER_HEADER_SEARCH_PATHS = "../../../addons/ofxIO/libs/alphanum/include/ ../../../addons/ofxIO/libs/ofxIO/include/ ../../../addons/ofxJSON/libs/jsoncpp/include/";
 				WRAPPER_EXTENSION = app;
@@ -1915,6 +1916,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_50)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = "../../../addons/ofxIO/libs/alphanum/include/ ../../../addons/ofxIO/libs/ofxIO/include/ ../../../addons/ofxJSON/libs/jsoncpp/include/";
 				WRAPPER_EXTENSION = app;

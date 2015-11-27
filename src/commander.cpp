@@ -13,33 +13,39 @@ commander::commander(){
 
 void commander::setup(videoController *vController){
     
-    finY.open( ofToDataPath("modulPositionsY.txt").c_str() );
-    while(finY!=NULL)
+    fin.open( ofToDataPath("modulPositionsY.txt").c_str() );
+    while(fin != NULL)
     {
         string str;
-        getline(finY, str);
+        getline(fin, str);
         float strToFloat = ofToFloat(str);
         modulPositionsY.push_back(strToFloat);
     }
-    finY.close();
+    fin.close();
     modulPositionsY.erase(modulPositionsY.end()-1);
     
     
-    
-    
-    cout << "positionY size: " << modulPositionsY.size() << endl;
-    
-    
-    finX.open( ofToDataPath("modulPositionsX.txt").c_str() );
-    while(finX!=NULL)
+    fin.open( ofToDataPath("modulPositionsX.txt").c_str() );
+    while(fin != NULL)
     {
         string str;
-        getline(finX, str);
+        getline(fin, str);
         float strToFloat = ofToFloat(str);
         modulPositionsX.push_back(strToFloat);
     }
-    finX.close();
+    fin.close();
     modulPositionsX.erase(modulPositionsX.end()-1);
+    
+    fin.open( ofToDataPath("screwGap.txt").c_str() );
+    while(fin!=NULL)
+    {
+        string str;
+        getline(fin, str);
+        float strToFloat = ofToFloat(str);
+        modulPositionsY.push_back(strToFloat);
+    }
+    fin.close();
+    
     calcMirrorPosPerModul();
     if(useTinyG){
         tinyg.setup();
@@ -197,7 +203,7 @@ void commander::sendGCode(string gCode){
     if (useTinyG) {
         tinyg.sendGcode(gCode);
     }else{
-        cout << "TinyG is not connected or deactivated" << endl;
+        ofLog(OF_LOG_WARNING) << "TinyG is not connected or deactivated" << endl;
     }
 }
 
@@ -212,21 +218,21 @@ void commander::updateModulPosition(int ID, float posX, float posY ){
         modulPositionsY.at(ID) = posY;
     }
     //Save to file
-    foutX.open(ofToDataPath("modulPositionsX.txt").c_str());
-    if (foutX.is_open())
+    fout.open(ofToDataPath("modulPositionsX.txt").c_str());
+    if (fout.is_open())
     {
         for(std::vector<float>::iterator iter = modulPositionsX.begin();iter != modulPositionsX.end();++iter){
-            foutX << (*iter) << endl;
+            fout << (*iter) << endl;
         }
-        foutX.close();
+        fout.close();
     }
-    foutY.open(ofToDataPath("modulPositionsY.txt").c_str());
-    if (foutY.is_open())
+    fout.open(ofToDataPath("modulPositionsY.txt").c_str());
+    if (fout.is_open())
     {
         for(std::vector<float>::iterator iter = modulPositionsY.begin();iter != modulPositionsY.end();++iter){
-            foutY << (*iter) << endl;
+            fout << (*iter) << endl;
         }
-        foutY.close();
+        fout.close();
     }
     calcMirrorPosPerModul();
 }
@@ -295,27 +301,26 @@ void commander::updateOffset(string offsetX, string offsetY){
         (*iter) += offSetYDiff;
     }
     
-    foutX.open(ofToDataPath("modulPositionsX.txt").c_str());
-    if (foutX.is_open())
+    fout.open(ofToDataPath("modulPositionsX.txt").c_str());
+    if (fout.is_open())
     {
         for(std::vector<float>::iterator iter = modulPositionsX.begin();iter != modulPositionsX.end();++iter){
-            foutX << (*iter) << endl;
+            fout << (*iter) << endl;
         }
-        foutX.close();
+        fout.close();
     }
     
-    foutY.open(ofToDataPath("modulPositionsY.txt").c_str());
-    if (foutY.is_open())
+    fout.open(ofToDataPath("modulPositionsY.txt").c_str());
+    if (fout.is_open())
     {
         for(std::vector<float>::iterator iter = modulPositionsY.begin();iter != modulPositionsY.end();++iter){
-            foutY << (*iter) << endl;
+            fout << (*iter) << endl;
         }
-        foutY.close();
+        fout.close();
     }
     calcMirrorPosPerModul();
     
 }
-
 
 float commander::getPosition(char axis){
     
@@ -334,7 +339,6 @@ float commander::getPosition(char axis){
     return;
 }
 
-
 void commander::newModulPos(int idi){
     float x,y;
     x = tinyg.getXPos();
@@ -350,6 +354,20 @@ void commander::gotoModul(int ID){
         sendGCode("g0x" + ofToString( modulPositionsX.at(ID)) + "y"+ ofToString(modulPositionsY.at(ID)));
     }
 
+}
+
+void commander::setScrewGap(){
+    ofLog(OF_LOG_WARNING, "make sure you set the gentry pos to to screw (5/0)");
+    float x = tinyg.getXPos();
+    float gap = x - modulPositionsX.at(0);
+    screwGap = x/5;
+    fout.open(ofToDataPath("screwGap.txt").c_str());
+    if (fout.is_open())
+    {
+        fout << screwGap << endl;
+    }
+    fout.close();
+    calcMirrorPosPerModul();
 }
 
 

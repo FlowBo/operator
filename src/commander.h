@@ -25,11 +25,9 @@ public:
     void setup(videoController *vController);
     void update();
     void draw();
-    
-    ifstream finX;
-    ofstream foutX;
-    ifstream finY;
-    ofstream foutY;
+
+    ifstream fin;
+    ofstream fout;
     
     float screwGap = 33.56;
     
@@ -53,6 +51,8 @@ public:
     std::vector <float> mirrorPositionX;
     std::vector <float> mirrorPositionY;
     void calcMirrorPosPerModul();
+    void setScrewGap();
+    
     
     //Motion Commands
     void sendGCode(string gCode);
