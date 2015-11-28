@@ -1,0 +1,1 @@
+{"sr":{"posx":0.000,"posy":0.000,"posz":0.000,"posa":0.000,"feed":0.00,"vel":0.00,"unit":1,"coor":1,"dist":0,"frmo":1,"stat":3}}

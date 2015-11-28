@@ -4,6 +4,28 @@
 #include "ofxSerial.h"
 #include "ofxJSON.h"
 
+
+class SerialMessage
+{
+public:
+    SerialMessage(): fade(0)
+    {
+    }
+    
+    SerialMessage(const std::string& _message,
+                  const std::string& _exception,
+                  int _fade):
+    message(_message),
+    exception(_exception),
+    fade(_fade)
+    {
+    }
+    
+    std::string message;
+    std::string exception;
+    int fade;
+};
+
 class tinyG{
 public:
     tinyG();
@@ -46,8 +68,8 @@ private:
     string bytesAsString;
     std::vector<string> byteStream;
     
-    
-    
-
-    
+    string lastMessage;
+    void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
+    void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
+    SerialMessage statusReport;
 };

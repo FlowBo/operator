@@ -19,21 +19,21 @@ void tinyG::setup(){
     if (!devicesInfo.empty())
     {
         // Connect to the first matching device.
-
-//        bool success = device.setup(devicesInfo[0], 115200);
+        
+        //        bool success = device.setup(devicesInfo[0], 115200);
         bool success =device.setup(devicesInfo[0], 115200,
-                     ofx::IO::SerialDevice::DATA_BITS_EIGHT,
-                     ofx::IO::SerialDevice::PAR_NONE,
-                     ofx::IO::SerialDevice::STOP_ONE,
-                     ofx::IO::SerialDevice::FLOW_CTRL_SOFTWARE,
-                     ofx::IO::SerialDevice::DEFAULT_TIMEOUT);
+                                   ofx::IO::SerialDevice::DATA_BITS_EIGHT,
+                                   ofx::IO::SerialDevice::PAR_NONE,
+                                   ofx::IO::SerialDevice::STOP_ONE,
+                                   ofx::IO::SerialDevice::FLOW_CTRL_SOFTWARE,
+                                   ofx::IO::SerialDevice::DEFAULT_TIMEOUT);
         
         if(success)
         {
             ofLogNotice("ofApp::setup") << "Successfully setup " << devicesInfo[0];
             device.setRequestToSend(true);
             device.setDataTerminalReady(true);
-
+            
         }
         else
         {
@@ -63,79 +63,126 @@ void tinyG::printStatus(){
 void tinyG::statusUpdate(){
     if (ofGetElapsedTimeMillis()% statusInterval < 10 ) {
         sendGcode("{sr:n}");
-        cout << "Status request" << endl;
     }
-    
-//
+}
+
+void tinyG::update(){
+    if(text != ""){
+        ofx::IO::ByteBuffer textBuffer(text);
+        device.writeBytes(textBuffer);
+        device.writeByte('\n');
+        cout << text << endl;
+        text = "";
+    }
+    if (lastMessage != statusReport.message) {
+        lastMessage = statusReport.message;
+        ofLog(OF_LOG_VERBOSE) <<  "Last Message: " << lastMessage;
+        result.parse(statusReport.message);
+        if (!result["sr"]["stat"].isNull()) {
+            stat = result["sr"]["stat"].asInt();
+        }
+        if (!result["sr"]["posx"].isNull()) {
+            xPos = result["sr"]["posx"].asFloat();
+        }
+        if (!result["sr"]["posy"].isNull()) {
+            yPos = result["sr"]["posy"].asFloat();
+        }
+        if (!result["sr"]["posz"].isNull()) {
+            zPos = result["sr"]["posz"].asFloat();
+        }
+        if (!result["sr"]["posa"].isNull()) {
+            aPos = result["sr"]["posa"].asFloat();
+        }
+        ofLog(OF_LOG_VERBOSE) <<  "xPos: " << xPos;
+        ofLog(OF_LOG_VERBOSE)<<   "yPos: " << yPos;
+        ofLog(OF_LOG_VERBOSE)<<   "zPos: " << zPos;
+        ofLog(OF_LOG_VERBOSE)  << "aPos: " << aPos;
+        ofLog(OF_LOG_VERBOSE) <<  "stat: "<<  stat;
+        cout << "------------" << endl;
+        
+    }
 }
 
 
-
-
-void tinyG::update(){
-    statusUpdate();
-    try
-    {
-        uint8_t buffer[10000];
-        std::ostringstream convert;
-        
-        bytesAsString = "";
-        
-        //99-> min string length
-        while (device.available() > 99)
-        {
-            std::size_t sz = device.readBytes(buffer, 10000);
-            
-            for (int i = 0; i < sz; ++i)
-            {
-                convert << buffer[i];
-            }
-            
-            bytesAsString = convert.str();
-            result = bytesAsString;
-            cout << "Result: " <<result << endl;
-            stat = result["r"]["sr"]["stat"].asInt();
-            xPos = result["r"]["sr"]["posx"].asFloat();
-            yPos = result["r"]["sr"]["posy"].asFloat();
-            zPos = result["r"]["sr"]["posz"].asFloat();
-            aPos = result["r"]["sr"]["posa"].asFloat();
-            cout << "Status: " << stat << endl;
-
-        }
-
-        if (stat == 3) {
-            busy = false;
-        }else {
-            busy = true;
-        }
-        
-        if(text != ""){
-            
-            ofx::IO::ByteBuffer textBuffer(text);
-            device.writeBytes(textBuffer);
-            device.writeByte('\n');
-            cout << text << endl;
-        }
-        text = "";
-    }
-    
-    catch (const std::exception& exc)
-    {
-        ofLogError("ofApp::update") << exc.what();
-    }
-    
-};
+//void tinyG::update(){
+//    statusUpdate();
+//    try
+//    {
+//
+//        uint8_t buffer[10000];
+//        std::ostringstream convert;
+//
+//        bytesAsString = "";
+//
+//        //99-> min string length
+//        while (device.available() > 99)
+//        {
+//            std::size_t sz = device.readBytes(buffer, 10000);
+//
+//            for (int i = 0; i < sz; ++i)
+//            {
+//                convert << buffer[i];
+//            }
+//
+//            bytesAsString = convert.str();
+//            cout << "bytesAsString: " <<bytesAsString << endl;
+//            result = bytesAsString;
+//            cout << "Result: " <<result << endl;
+//            stat = result["r"]["sr"]["stat"].asInt();
+//            xPos = result["r"]["sr"]["posx"].asFloat();
+//            yPos = result["r"]["sr"]["posy"].asFloat();
+//            zPos = result["r"]["sr"]["posz"].asFloat();
+//            aPos = result["r"]["sr"]["posa"].asFloat();
+//        }
+//
+//        if (stat == 3) {
+//            busy = false;
+//        }else {
+//            busy = true;
+//        }
+//
+//        if(text != ""){
+//
+//            ofx::IO::ByteBuffer textBuffer(text);
+//            device.writeBytes(textBuffer);
+//            device.writeByte('\n');
+//            cout << text << endl;
+//        }
+//        text = "";
+//        device.flushInput();
+//        device.flushOutput();
+//
+//    }
+//
+//    catch (const std::exception& exc)
+//    {
+//        ofLogError("ofApp::update") << exc.what();
+//    }
+//   };
 
 void tinyG::draw(){
     ofSetColor(0,0,0);
     int y = 700;
-
+    
 }
 
 void tinyG::sendGcode(string t){
     text = t;
 };
 
+void tinyG::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
+{
+    SerialMessage message(args.getBuffer().toString(), "", 10000);
+    statusReport = message;
+}
+
+void tinyG::onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args)
+{
+    // Errors and their corresponding buffer (if any) will show up here.
+    SerialMessage message(args.getBuffer().toString(),
+                          args.getException().displayText(),
+                          1000);
+}
 
 
 

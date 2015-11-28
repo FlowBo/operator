@@ -39,7 +39,7 @@ public:
 
 
     //Setup
-    bool useTinyG = false;
+    bool useTinyG = true;
     void start();
     
     //Modul Positions
