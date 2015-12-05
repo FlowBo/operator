@@ -6,8 +6,6 @@
 tinyG::tinyG(){};
 
 void tinyG::setup(){
-    stat = 5;
-    lastStat = 100;
     std::vector<ofx::IO::SerialDeviceInfo> devicesInfo = ofx::IO::SerialDeviceUtils::listDevices();
     
     ofLogNotice("ofApp::setup") << "Connected Devices: ";
@@ -16,24 +14,17 @@ void tinyG::setup(){
     {
         ofLogNotice("ofApp::setup") << "\t" << devicesInfo[i];
     }
+    
     if (!devicesInfo.empty())
     {
         // Connect to the first matching device.
-        
-        //        bool success = device.setup(devicesInfo[0], 115200);
-        bool success =device.setup(devicesInfo[0], 115200,
-                                   ofx::IO::SerialDevice::DATA_BITS_EIGHT,
-                                   ofx::IO::SerialDevice::PAR_NONE,
-                                   ofx::IO::SerialDevice::STOP_ONE,
-                                   ofx::IO::SerialDevice::FLOW_CTRL_SOFTWARE,
-                                   ofx::IO::SerialDevice::DEFAULT_TIMEOUT);
+        bool success = device.setup(devicesInfo[0], 115200);
         
         if(success)
         {
+            device.registerAllEvents(this);//  registerAllEvents(this);
+         
             ofLogNotice("ofApp::setup") << "Successfully setup " << devicesInfo[0];
-            device.setRequestToSend(true);
-            device.setDataTerminalReady(true);
-            
         }
         else
         {
@@ -44,40 +35,25 @@ void tinyG::setup(){
     {
         ofLogNotice("ofApp::setup") << "No devices connected.";
     }
-    cout << "FlowControl: " << device.getFlowControl() << endl;
-    
-    sendGcode("$ej 1");
+
+//    sendGcodeDirect("$ej 1");
+//    ofSleepMillis(300);
+    stat = 5;
+    lastStat = 100;
+    lastMessage = "HALLO";
     sendGcode("g28.2x0y0z0");
-    sendGcode("g55");
+    
     
 };
 
-void tinyG::printStatus(){
-    cout << "xPos: " << xPos << endl;
-    cout << "yPos: " << yPos << endl;
-    cout << "zPos: " << zPos << endl;
-    cout << "aPos: " << aPos << endl;
-    cout << "stat: " << stat << endl;
-}
 
-void tinyG::statusUpdate(){
-    if (ofGetElapsedTimeMillis()% statusInterval < 10 ) {
-        sendGcode("{sr:n}");
-    }
-}
 
 void tinyG::update(){
-    if(text != ""){
-        ofx::IO::ByteBuffer textBuffer(text);
-        device.writeBytes(textBuffer);
-        device.writeByte('\n');
-        cout << text << endl;
-        text = "";
-    }
     if (lastMessage != statusReport.message) {
         lastMessage = statusReport.message;
         ofLog(OF_LOG_VERBOSE) <<  "Last Message: " << lastMessage;
         result.parse(statusReport.message);
+        //        cout << result << endl << endl;
         if (!result["sr"]["stat"].isNull()) {
             stat = result["sr"]["stat"].asInt();
         }
@@ -99,81 +75,23 @@ void tinyG::update(){
         ofLog(OF_LOG_VERBOSE)  << "aPos: " << aPos;
         ofLog(OF_LOG_VERBOSE) <<  "stat: "<<  stat;
         cout << "------------" << endl;
-        
     }
 }
 
 
-//void tinyG::update(){
-//    statusUpdate();
-//    try
-//    {
-//
-//        uint8_t buffer[10000];
-//        std::ostringstream convert;
-//
-//        bytesAsString = "";
-//
-//        //99-> min string length
-//        while (device.available() > 99)
-//        {
-//            std::size_t sz = device.readBytes(buffer, 10000);
-//
-//            for (int i = 0; i < sz; ++i)
-//            {
-//                convert << buffer[i];
-//            }
-//
-//            bytesAsString = convert.str();
-//            cout << "bytesAsString: " <<bytesAsString << endl;
-//            result = bytesAsString;
-//            cout << "Result: " <<result << endl;
-//            stat = result["r"]["sr"]["stat"].asInt();
-//            xPos = result["r"]["sr"]["posx"].asFloat();
-//            yPos = result["r"]["sr"]["posy"].asFloat();
-//            zPos = result["r"]["sr"]["posz"].asFloat();
-//            aPos = result["r"]["sr"]["posa"].asFloat();
-//        }
-//
-//        if (stat == 3) {
-//            busy = false;
-//        }else {
-//            busy = true;
-//        }
-//
-//        if(text != ""){
-//
-//            ofx::IO::ByteBuffer textBuffer(text);
-//            device.writeBytes(textBuffer);
-//            device.writeByte('\n');
-//            cout << text << endl;
-//        }
-//        text = "";
-//        device.flushInput();
-//        device.flushOutput();
-//
-//    }
-//
-//    catch (const std::exception& exc)
-//    {
-//        ofLogError("ofApp::update") << exc.what();
-//    }
-//   };
-
-void tinyG::draw(){
-    ofSetColor(0,0,0);
-    int y = 700;
-    
-}
 
 void tinyG::sendGcode(string t){
-    text = t;
+    ofx::IO::ByteBuffer textBuffer(t);
+    device.writeBytes(textBuffer);
+    device.writeByte('\n');
+    cout << t << endl;
 };
 
 void tinyG::onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args)
 {
     SerialMessage message(args.getBuffer().toString(), "", 10000);
     statusReport = message;
+
 }
 
 void tinyG::onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args)

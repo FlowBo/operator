@@ -51,6 +51,9 @@ public:
     void updateOffset(string offsetX ,string offsetY);
     void setG55();
 
+    vector<float> offset;
+
+    
     //Mirror Pos
     std::vector <float> mirrorPositionX;
     std::vector <float> mirrorPositionY;

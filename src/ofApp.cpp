@@ -9,6 +9,10 @@ void ofApp::setup(){
     {
         vController.setup(useExternalCamera);
     }
+        ofShowCursor();
+    ofSetFrameRate(60);
+    ofSetLogLevel(OF_LOG_VERBOSE);
+    guiSetup();
     op900.setup(&vController);
     image.loadImage("red_square.png");
     for(int x = image.width; x >= 0;x--){
@@ -16,10 +20,7 @@ void ofApp::setup(){
             imageColorsSorted.push_back(image.getColor(x, y));
         }
     }
-    ofShowCursor();
-    ofSetFrameRate(60);
-    ofSetLogLevel(OF_LOG_VERBOSE);
-    guiSetup();
+
     
 }
 
@@ -39,25 +40,88 @@ void ofApp::draw(){
         vController.draw();
     }
     op900.draw();
-    ofDrawBitmapString(ofToString(ofGetFrameRate()), 10, ofGetWindowHeight() - 50);
-    ofDrawBitmapString("Incement: " + ofToString(increment), 10,ofGetWindowHeight() - 30);
+    std::stringstream ss;
+    ss << ofGetFrameRate << endl;
+    ss << "Increment: " << increment;
+    ofDrawBitmapString(ss.str(), 10,ofGetWindowHeight() - 30);
     gui.draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     if(key == '+'){
-        increment += 0.02;
+        
+        if (shift) {
+            increment += 0.1;
+        }else{
+            increment += 0.02;
+        }
+        
         if (increment > 10) {
             increment = 10;
         }
     }
     if(key == '-'){
-        increment -= 0.02;
+        if (shift) {
+            increment -= 0.1;
+        }else{
+            increment -= 0.02;
+        }
         if (increment < 0.02) {
             increment = 0.02;
         }
     }
+    if(key == OF_KEY_LEFT){
+        float xPos = op900.getPosition('x');
+        float nx = xPos - increment;
+        std::stringstream g;
+        g << "g0x" << nx;
+        op900.sendGCode(g.str());
+        cout << "newXPos:" << g.str() << endl;
+    }
+    if(key == OF_KEY_RIGHT){
+        float xPos = op900.getPosition('x');
+        float nx = xPos + increment;
+        std::stringstream g;
+        g << "g0x" << nx;
+        op900.sendGCode(g.str());
+        cout << "newXPos:" << g.str() << endl;
+    }
+    if(key == OF_KEY_UP){
+        float yPos = op900.getPosition('y');
+        float ny = yPos + increment;
+        std::stringstream g;
+        g << "g0y" << ny;
+        op900.sendGCode(g.str());
+        cout << "newYPos:" << g.str() << endl;
+    }
+    if(key == OF_KEY_DOWN){
+        float yPos = op900.getPosition('y');
+        float ny = yPos - increment;
+        std::stringstream g;
+        g << "g0y" << ny;
+        op900.sendGCode(g.str());
+        cout << "newYPos:" << g.str() << endl;
+        
+    }
+    if(key == ','){
+        float zPos = op900.getPosition('z');
+        float nz = zPos + increment;
+        std::stringstream g;
+        g << "g0z" << nz;
+        op900.sendGCode(g.str());
+        cout << "newzPos:" << g.str() << endl;
+        
+    }
+    if(key == '.'){
+        float zPos = op900.getPosition('z');
+        float nz = zPos - increment;
+        std::stringstream g;
+        g << "g0z" << nz;
+        op900.sendGCode(g.str());
+        cout << "newzPos:" << g.str() << endl;
+    }
+
 }
 
 //--------------------------------------------------------------
@@ -70,6 +134,13 @@ void ofApp::keyReleased(int key){
         ofLog(OF_LOG_NOTICE) << "ID: " << pId << " Pos: " << newPosX << ", " << newPosY << endl;
         op900.updateModulPosition(ofToInt(pId), ofToFloat(newPosX), ofToFloat(newPosY));
         
+    }
+    if(key == OF_KEY_SHIFT){
+        if (!shift) {
+            shift = true;
+        }else{
+            shift = false;
+        }
     }
     if(key == 'g'){
         string gCode;
@@ -86,58 +157,16 @@ void ofApp::keyReleased(int key){
     }
     if (key == 'o') {
         //Set new offset for
-//        string offsetX;
-//        string offsetY;
-//        
-//        offsetX = ofSystemTextBoxDialog("Enter X-Offset (Position)", offsetX);
-//        offsetY = ofSystemTextBoxDialog("Enter Y-Offset (Position)", offsetY);
-//        op900.updateOffset(offsetX,offsetY);
-//        
         op900.setG55();
     }
-    if(key == OF_KEY_LEFT){
-        float xPos = op900.getPosition('x');
-        string g = ofToString(xPos - increment);
-        op900.sendGCode(g);
-        ofLog(OF_LOG_NOTICE) << "newXPos:" << g << endl;
-    }
-    if(key == OF_KEY_RIGHT){
-        float xPos = op900.getPosition('x');
-        string g = ofToString(xPos + increment);
-        op900.sendGCode(g);
-        ofLog(OF_LOG_NOTICE) << "newXPos:" << g << endl;
-    }
-    if(key == OF_KEY_UP){
-        float yPos = op900.getPosition('y');
-        string g = ofToString(yPos + increment);
-        op900.sendGCode(g);
-        ofLog(OF_LOG_NOTICE) << "newYPos:" << g << endl;
-    }
-    if(key == OF_KEY_DOWN){
-        float yPos = op900.getPosition('y');
-        string g = ofToString(yPos - increment);
-        op900.sendGCode(g);
-        ofLog(OF_LOG_NOTICE) << "newYPos:" << g << endl;
-
-    }
-    if(key == ','){
-        float zPos = op900.getPosition('z');
-        string g = ofToString(zPos + increment);
-        op900.sendGCode(g);
-        ofLog(OF_LOG_NOTICE) << "newZPos:" << g << endl;
-    }
-    if(key == '.'){
-        float zPos = op900.getPosition('z');
-        string g = ofToString(zPos - increment);
-        op900.sendGCode(g);
-        ofLog(OF_LOG_NOTICE) << "newZPos:" << g << endl;
-    }
-    if(key == ' '){
+       if(key == ' '){
         if (feedhold) {
             op900.sendGCode("~");
+            feedhold = false;
             ofLog(OF_LOG_NOTICE) << "Resume" << endl;
         }else{
             op900.sendGCode("!");
+            feedhold = true;
             ofLog(OF_LOG_NOTICE) << "Feedhold" << endl;
         }
     }
@@ -145,6 +174,7 @@ void ofApp::keyReleased(int key){
         string id;
         ofSystemTextBoxDialog("Module ID for new Pos", id);
         int idi = ofToInt(id);
+        cout << idi << endl;
         op900.newModulPos(idi);
     }
     if(key == 'r'){

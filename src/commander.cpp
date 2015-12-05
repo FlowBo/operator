@@ -46,6 +46,19 @@ void commander::setup(videoController *vController){
     }
     fin.close();
     
+//    fin.open( ofToDataPath("offset.txt").c_str() );
+//    while(fin!=NULL)
+//    {
+//        string str;
+//        getline(fin, str);
+//        float strToFloat = ofToFloat(str);
+//        offset.push_back(strToFloat);
+//    }
+//    fin.close();
+//    std::ostringstream s;
+//    s << "G10L2P2X" << offset.at(0) << "Y" << offset.at(1);
+//    sendGCode(s.str());
+    
     calcMirrorPosPerModul();
     if(useTinyG){
         tinyg.setup();
@@ -65,7 +78,24 @@ void commander::update(){
     
 }
 void commander::start(){
-    startMachine = true;
+    fin.open( ofToDataPath("offset.txt").c_str() );
+    while(fin!=NULL)
+    {
+        string str;
+        getline(fin, str);
+        float strToFloat = ofToFloat(str);
+        offset.push_back(strToFloat);
+    }
+    fin.close();
+    std::ostringstream s;
+    s << "G10L2P2X" << offset.at(0) << "Y" << offset.at(1);
+    sendGCode(s.str());
+    sendGCode("g55");
+    if(!startMachine){
+        startMachine = true;
+    }else{
+        startMachine = true;
+    }
 }
 void commander::printStatus(){
     if(cycle != lastCycle)
@@ -93,8 +123,11 @@ void commander::operating(){
             case TRAVERSE:
                 if(!tinyg.isBusy()){
                     sendGCode("g1f6000");//Set feedrate to 6000
-                    string g = "g0x"+ ofToString(mirrorPositionX.at(currentMirror))+"y" + ofToString(mirrorPositionY.at(currentMirror));
-                    sendGCode(g);
+                    std::ostringstream s;
+                    s << "g0x" <<mirrorPositionX.at(currentMirror);
+                    s << "y"  << mirrorPositionY.at(currentMirror);
+
+                    sendGCode(s.str());
                     cycle = ENGAGING_SCREW;
                 }
                 break;
@@ -158,10 +191,11 @@ void commander::updateCloasestColor(){
     
 }
 void commander::goToCloasestColor(){
-    string s = "g1a"+ ofToString(cloasestColorAPos) +"f10000";
+    std::ostringstream  s;
+    s << "g1a" << cloasestColorAPos  << "f10000";
     if (!dryRun) {
 //        s = "g1a45.2f10000";
-        sendGCode(s);
+        sendGCode(s.str());
     }
     
 }
@@ -195,7 +229,7 @@ void commander::scanColors(){
 
 void commander::draw(){
     if(useTinyG){
-        tinyg.draw();
+
     }
 }
 
@@ -287,40 +321,7 @@ void commander::calcMirrorPosPerModul()
     
 }
 
-//void commander::updateOffset(string offsetX, string offsetY){
-//    float offsetXf = ofToFloat(offsetX);
-//    float offsetYf = ofToFloat(offsetY);
-//    
-//    float offSetXDiff = offsetXf - (modulPositionsX.at(0));
-//    float offSetYDiff = offsetYf - (modulPositionsY.at(0));
-//    
-//    for(std::vector<float>::iterator iter = modulPositionsX.begin();iter != modulPositionsX.end();++iter){
-//        (*iter) += offSetXDiff;
-//    }
-//    for(std::vector<float>::iterator iter = modulPositionsY.begin();iter != modulPositionsY.end();++iter){
-//        (*iter) += offSetYDiff;
-//    }
-//    
-//    fout.open(ofToDataPath("modulPositionsX.txt").c_str());
-//    if (fout.is_open())
-//    {
-//        for(std::vector<float>::iterator iter = modulPositionsX.begin();iter != modulPositionsX.end();++iter){
-//            fout << (*iter) << endl;
-//        }
-//        fout.close();
-//    }
-//    
-//    fout.open(ofToDataPath("modulPositionsY.txt").c_str());
-//    if (fout.is_open())
-//    {
-//        for(std::vector<float>::iterator iter = modulPositionsY.begin();iter != modulPositionsY.end();++iter){
-//            fout << (*iter) << endl;
-//        }
-//        fout.close();
-//    }
-//    calcMirrorPosPerModul();
-//    
-//}
+
 
 float commander::getPosition(char axis){
     
@@ -351,7 +352,10 @@ void commander::gotoModul(int ID){
         ofLog(OF_LOG_ERROR) << "ID is out of bound" << endl;
     }else{
         sendGCode("g0z0");
-        sendGCode("g0x" + ofToString( modulPositionsX.at(ID)) + "y"+ ofToString(modulPositionsY.at(ID)));
+        std::ostringstream s;
+        s << "g0x" <<  modulPositionsX.at(ID);
+        s << "y" <<  modulPositionsY.at(ID);
+        sendGCode(s.str());
     }
 
 }
@@ -374,6 +378,9 @@ void commander::setScrewGap(){
 void commander::setG55(){
     float x = tinyg.getXPos();
     float y = tinyg.getYPos();
-    sendGCode("G10L2P2X" + ofToString(x) + "Y" + ofToString(y));
-}
+    std::ostringstream s;
+    s << "G10L2P2X" << x << "Y" << y;
+    sendGCode(s.str());
+    
+    }
 

@@ -23,8 +23,8 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-    commander op900;
     
+    bool shift = false;
     void guiSetup();
     
     float increment = 0.1;
@@ -49,5 +49,5 @@ public:
     ofxPanel gui;
     ofxButton gotoModulButton;
     void gotoModulButtonPressed();
-    
+    commander op900;
 };

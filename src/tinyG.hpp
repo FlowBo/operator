@@ -31,8 +31,12 @@ public:
     tinyG();
     void setup();
     void update();
-    void draw();
     void sendGcode(string t );
+    
+    void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
+    void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
+
+    
     //Getter Function
     bool isBusy(){return busy;};
     
@@ -40,12 +44,8 @@ public:
     float getYPos(){return yPos;};
     float getZPos(){return zPos;};
     float getAPos(){return aPos;};
-    
-    void printStatus();
-    
-    
 private:
-    ofx::IO::SerialDevice device;
+    ofx::IO::BufferedSerialDevice device;
     char charKey;
     string text;
 
@@ -53,7 +53,6 @@ private:
     bool busy = false;
     
     int statusInterval = 250; // Millis
-    void statusUpdate();
 
     //TinyG status
     float xPos;
@@ -69,7 +68,6 @@ private:
     std::vector<string> byteStream;
     
     string lastMessage;
-    void onSerialBuffer(const ofx::IO::SerialBufferEventArgs& args);
-    void onSerialError(const ofx::IO::SerialBufferErrorEventArgs& args);
+    
     SerialMessage statusReport;
 };
